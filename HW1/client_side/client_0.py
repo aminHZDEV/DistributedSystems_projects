@@ -5,5 +5,5 @@ utils = Utils()
 port = utils.setup()
 client = Client(port=port)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     client.client_program()
