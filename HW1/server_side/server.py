@@ -12,6 +12,11 @@ k = Keys()
 
 def read_data(file_name: str = "data.csv"):
     df = pd.read_csv(os.path.join(os.getcwd(), file_name), skipinitialspace=True)
+    # Remove single quotes from column names
+    df.columns = df.columns.str.replace("'", "")
+    # Remove single quotes from data values
+    df = df.apply(lambda x: x.str.replace("'", "") if x.dtype == "object" else x)
+    df['id'] = df['id'].astype(int)
     return df
 
 
@@ -92,7 +97,7 @@ def server_program():
         conn, address = server_socket.accept()
         print("Connection from: " + str(address))
         connections.append({"conn": conn, "addr": address})
-    data = convert_data_frame_to_json_format(read_data("data.csv"))
+    data = convert_data_frame_to_json_format(read_data("RandomData.csv"))
     data_per_client = len(data) // client_amount
     for i, conn in enumerate(connections):
         start_index = i * data_per_client

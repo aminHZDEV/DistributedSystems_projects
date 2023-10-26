@@ -16,7 +16,7 @@ class Client(Keys):
         self.port = port
         self.data_saved = []
         self.time_start = None
-        self.time_out = 5
+        self.time_out = 30
         self.time_lock = threading.Lock()
         self.time_queue = Queue()
 
@@ -49,11 +49,17 @@ class Client(Keys):
 
     def listener(self, client_socket):
         data = ""
-        received_data = client_socket.recv(1024).decode()
-        if not received_data:
-            return None
-        data += received_data
-        json_data = json.loads(received_data)
+        while True:
+            try:
+                received_data = client_socket.recv(1024).decode()
+                if not received_data:
+                    return None
+                data += received_data
+                json_data = json.loads(data)
+                data = ""
+                break
+            except Exception as e:
+                continue
         return json_data
 
     def set_input(self, client_socket):
