@@ -3,7 +3,9 @@ import socket
 import json
 import sys
 import threading
-import time
+from queue import Queue
+
+
 sys.path.append("../")
 from common.resources import Keys
 
@@ -15,6 +17,8 @@ class Client(Keys):
         self.data_saved = []
         self.time_start = None
         self.time_out = 5
+        self.time_lock = threading.Lock()
+        self.time_queue = Queue()
 
     def client_program(self) -> None:
         host = socket.gethostname()
@@ -55,19 +59,29 @@ class Client(Keys):
     def set_input(self, client_socket):
         while True:
             if self.time_start is None:
-                id = int(input("Enter the id of data > "))
-                if self.search_id(id):
-                    print("\nData exist in this client\n")
-                else:
-                    print("\nWaiting ...\n")
-                    self.time_start = datetime.datetime.now().second
-                    client_socket.send(
-                        json.dumps({"state": self.SEARCH_STATE, "id": id}).encode("utf-8")
-                    )
-            elif datetime.datetime.now().second - self.time_start > 5:
-                print("\nSorry time out data not found :(\n")
-                self.time_start = None
-
+                try:
+                    id = int(input("\nEnter the id of data > \n"))
+                    if self.search_id(id):
+                        print("\nData exist in this client\n")
+                    else:
+                        print("\nWaiting ...\n")
+                        self.time_start = datetime.datetime.now().second
+                        client_socket.send(
+                            json.dumps({"state": self.SEARCH_STATE, "id": id}).encode(
+                                "utf-8"
+                            )
+                        )
+                except Exception as e:
+                    print("\nError : ", e.__str__())
+                    print("\n\nTry again : \n\n")
+            else:
+                try:
+                    time_elapsed = datetime.datetime.now().second - self.time_start
+                    if time_elapsed > self.time_out:
+                        print("\nSorry, time out: data not found :(\n")
+                        self.time_start = None
+                except Exception as e:
+                    continue
 
 
     def handler(self, client_socket):
@@ -89,22 +103,28 @@ class Client(Keys):
                                     "state": self.RESPONSE,
                                     "data": self.get_data(id),
                                     "address": json_data["address"],
-                                    "status": self.OK
+                                    "status": self.OK,
                                 }
                             ).encode("utf-8")
                         )
                     else:
                         client_socket.send(
                             json.dumps(
-                                {"state": self.RESPONSE, "data": "", "status": self.NOT_FOUND}
+                                {
+                                    "state": self.RESPONSE,
+                                    "data": "",
+                                    "status": self.NOT_FOUND,
+                                }
                             ).encode("utf-8")
                         )
                 if self.check_state(json_data) == self.RESPONSE:
-                    self.time_start = None
+                    self.time_lock.acquire()
                     print(
                         "\ndata found :) ",
                         json_data["data"],
                         "\nin client {address}".format(address=json_data["address"]),
                     )
+                    self.time_start = None
+                    self.time_lock.release()
             except Exception as e:
                 print("\nERROR in handler client : ", e)

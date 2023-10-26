@@ -74,10 +74,11 @@ def handler(connections, conn, data):
                                     "state": k.RESPONSE,
                                     "data": json_data["data"],
                                     "address": c["addr"],
-                                    "status": k.OK
+                                    "status": k.OK,
                                 }
                             ).encode("utf-8")
                         )
+
 
 def server_program():
     # get the hostname
