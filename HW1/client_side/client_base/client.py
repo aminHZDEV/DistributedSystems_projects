@@ -84,7 +84,7 @@ class Client(Keys):
             else:
                 try:
                     time_elapsed = datetime.datetime.now().second - self.time_start
-                    if abs(time_elapsed) - self.time_out:
+                    if abs(time_elapsed) > self.time_out:
                         print("\nSorry, time out: data not found :(\n")
                         self.time_start = None
                 except Exception as e:

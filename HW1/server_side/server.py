@@ -113,15 +113,13 @@ def server_program():
             )
         )
     try:
-        t1 = threading.Thread(target=handler, args=(connections, connections[0], data))
-        t2 = threading.Thread(target=handler, args=(connections, connections[1], data))
-        t3 = threading.Thread(target=handler, args=(connections, connections[2], data))
-        t1.start()
-        t2.start()
-        t3.start()
-        t1.join()
-        t2.join()
-        t3.join()
+        thread_list = []
+        for i in range(client_amount):
+            thread_list.append(threading.Thread(target=handler, args=(connections, connections[i], data)))
+        for item in thread_list:
+            item.start()
+        for item in thread_list:
+            item.join()
     except Exception as e:
         # Handle the exception if any error occurs
         print("ERROR : ", e)
