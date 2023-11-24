@@ -10,20 +10,13 @@ import configparser
 sys.path.append("../")
 from common.resources import Keys
 
-
-def setup(config_file: str = "config.ini"):
-    config = configparser.ConfigParser()
-    config.read(config_file)
-    time_out = int(config["client"]["time_out"])
-    return time_out
-
 class Client(Keys):
-    def __init__(self, port: int = 5000):
+    def __init__(self, port: int = 5000, time_out: int = 5):
         super().__init__()
         self.port = port
         self.data_saved = []
         self.time_start = None
-        self.time_out = setup()
+        self.time_out = time_out
         self.time_lock = threading.Lock()
         self.time_queue = Queue()
 
