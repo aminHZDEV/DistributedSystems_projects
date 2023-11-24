@@ -1,4 +1,3 @@
-pandas
 django
 djangorestframework
 markdown

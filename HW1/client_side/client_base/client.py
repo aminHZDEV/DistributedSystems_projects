@@ -4,11 +4,18 @@ import json
 import sys
 import threading
 from queue import Queue
+import configparser
 
 
 sys.path.append("../")
 from common.resources import Keys
 
+
+def setup(config_file: str = "config.ini"):
+    config = configparser.ConfigParser()
+    config.read(config_file)
+    time_out = int(config["client"]["time_out"])
+    return time_out
 
 class Client(Keys):
     def __init__(self, port: int = 5000):
@@ -16,7 +23,7 @@ class Client(Keys):
         self.port = port
         self.data_saved = []
         self.time_start = None
-        self.time_out = 30
+        self.time_out = setup()
         self.time_lock = threading.Lock()
         self.time_queue = Queue()
 
@@ -25,7 +32,8 @@ class Client(Keys):
         client_socket = socket.socket()
         client_socket.connect((host, self.port))
         try:
-            t1 = threading.Thread(target=self.handler, args=(client_socket,))
+            t1 = threading.Thread(target=self.
+                                  handler, args=(client_socket,))
             t2 = threading.Thread(target=self.set_input, args=(client_socket,))
             t1.start()
             t2.start()
@@ -83,12 +91,11 @@ class Client(Keys):
             else:
                 try:
                     time_elapsed = datetime.datetime.now().second - self.time_start
-                    if time_elapsed > self.time_out:
+                    if abs(time_elapsed) - self.time_out:
                         print("\nSorry, time out: data not found :(\n")
                         self.time_start = None
                 except Exception as e:
                     continue
-
 
     def handler(self, client_socket):
         while True:

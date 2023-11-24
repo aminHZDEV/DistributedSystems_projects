@@ -16,7 +16,7 @@ def read_data(file_name: str = "data.csv"):
     df.columns = df.columns.str.replace("'", "")
     # Remove single quotes from data values
     df = df.apply(lambda x: x.str.replace("'", "") if x.dtype == "object" else x)
-    df['id'] = df['id'].astype(int)
+    df["id"] = df["id"].astype(int)
     return df
 
 
