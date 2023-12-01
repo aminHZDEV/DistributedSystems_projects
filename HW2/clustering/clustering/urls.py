@@ -14,8 +14,9 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.urls import include, path
+from django.urls import path
+from app.views import get_instance_kuber_id
 
 urlpatterns = [
-    path("/instance-id", include("rest_framework.urls", namespace="rest_framework"))
+    path("instance_id/", get_instance_kuber_id, name="instance_id")
 ]

@@ -1,21 +1,30 @@
 version: '3.8'
 
+networks:
+  backend:
+
 services:
   django:
+    networks:
+      - backend
     image: python:3.10.12
     deploy:
-      replicas: 2
+      replicas: 1
       placement:
         constraints:
           - node.labels.type == worker
     volumes:
-      - ./clustering:/clustering
+      - ./clustering/:/app
     command: >
-      bash -c "pip3 install --no-cache-dir -r /clustering/requirements.txt 
-      && python3 /clustering/manage.py collectstatic --noinput 
-      && python3 /clustering/manage.py migrate && gunicorn myproject.wsgi:application --bind 0.0.0.0:8000"
+      bash -c "pip3 install --no-cache-dir -r /app/requirements.txt 
+      && python3 /app/manage.py collectstatic --noinput 
+      && python3 /app/manage.py migrate && gunicorn --chdir app clustering.wsgi:application --bind 0.0.0.0:8000"
 
   nginx:
+    depends_on:
+      - django
+    networks:
+      - backend
     image: nginx
     deploy:
       replicas: 1
